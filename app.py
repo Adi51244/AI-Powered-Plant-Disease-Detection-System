@@ -36,7 +36,7 @@ GOOGLE_API_KEY = ENV_VARS.get('GOOGLE_API_KEY', '')
 GOOGLE_SEARCH_ENGINE_ID = ENV_VARS.get('GOOGLE_SEARCH_ENGINE_ID', '')
 PLANTNET_API_KEY = ENV_VARS.get('PLANTNET_API_KEY', '')
 
-app = Flask(__name__)
+app = Flask(__name__, static_folder='static', static_url_path='/static')
 app.config['UPLOAD_FOLDER'] = 'uploads'
 app.config['RESULTS_FOLDER'] = 'results'
 app.config['MAX_CONTENT_LENGTH'] = 16 * 1024 * 1024  # 16MB max file size
@@ -54,10 +54,12 @@ MODEL_PATH = 'model/best.pt'
 try:
     # Fix for PyTorch 2.8+ compatibility
     import torch.serialization
-    torch.serialization.add_safe_globals(['ultralytics.nn.tasks.DetectionModel'])
+    from ultralytics.nn.tasks import DetectionModel
+    torch.serialization.add_safe_globals([DetectionModel])
     model = YOLO(MODEL_PATH)
+    print("✅ YOLO model loaded successfully!")
 except Exception as e:
-    print(f"Error loading model: {e}")
+    print(f"Error loading model with safe_globals: {e}")
     # Fallback: try loading with weights_only=False (if older PyTorch)
     try:
         import torch
@@ -68,8 +70,9 @@ except Exception as e:
         torch.load = patched_load
         model = YOLO(MODEL_PATH)
         torch.load = original_load
+        print("✅ YOLO model loaded with fallback method!")
     except Exception as e2:
-        print(f"Model loading failed: {e2}")
+        print(f"❌ Model loading failed completely: {e2}")
         model = None
 
 # Disease information database
@@ -1555,6 +1558,7 @@ def api_status():
     """Check API availability status"""
     status = {
         'external_apis_enabled': USE_EXTERNAL_APIs,
+        'yolo_model': 'Loaded' if model is not None else 'Failed to load',
         'wikipedia_api': 'Available',
         'google_custom_search': 'Not configured',
         'gemini_ai': 'Not configured',
