@@ -51,7 +51,26 @@ os.makedirs(app.config['RESULTS_FOLDER'], exist_ok=True)
 
 # Load the YOLO model
 MODEL_PATH = 'model/best.pt'
-model = YOLO(MODEL_PATH)
+try:
+    # Fix for PyTorch 2.8+ compatibility
+    import torch.serialization
+    torch.serialization.add_safe_globals(['ultralytics.nn.tasks.DetectionModel'])
+    model = YOLO(MODEL_PATH)
+except Exception as e:
+    print(f"Error loading model: {e}")
+    # Fallback: try loading with weights_only=False (if older PyTorch)
+    try:
+        import torch
+        original_load = torch.load
+        def patched_load(*args, **kwargs):
+            kwargs['weights_only'] = False
+            return original_load(*args, **kwargs)
+        torch.load = patched_load
+        model = YOLO(MODEL_PATH)
+        torch.load = original_load
+    except Exception as e2:
+        print(f"Model loading failed: {e2}")
+        model = None
 
 # Disease information database
 DISEASE_INFO = {
@@ -1421,6 +1440,10 @@ def get_disease_info(disease_name, use_api=True):
 def process_image(image_path):
     """Process image with YOLO model and return results"""
     try:
+        # Check if model loaded successfully
+        if model is None:
+            raise Exception("YOLO model not loaded properly")
+            
         # Run inference
         results = model(image_path)
         

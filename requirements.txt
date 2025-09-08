@@ -8,8 +8,8 @@ gunicorn==21.2.0
 
 # AI & Machine Learning
 ultralytics==8.0.196
-torch>=2.0.0
-torchvision>=0.15.0
+torch>=2.0.0,<2.8.0
+torchvision>=0.15.0,<0.23.0
 
 # Image Processing
 opencv-python-headless==4.8.1.78
