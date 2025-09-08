@@ -1484,8 +1484,10 @@ def process_image(image_path):
         if model is None:
             raise Exception("YOLO model not loaded properly")
             
-        # Run inference
-        results = model(image_path)
+        # Run inference with lower confidence threshold
+        results = model(image_path, conf=0.1)  # Lower confidence to 10%
+        
+        print(f"🔍 YOLO results: {len(results)} result(s)")
         
         # Extract detection information
         detections = []
@@ -1499,13 +1501,17 @@ def process_image(image_path):
             # Process detections
             if result.boxes is not None:
                 boxes = result.boxes
+                print(f"🔍 Found {len(boxes)} detection boxes")
                 for i, box in enumerate(boxes):
                     # Get class ID and confidence
                     class_id = int(box.cls[0])
                     confidence = float(box.conf[0])
                     
+                    print(f"📊 Detection {i+1}: Class {class_id}, Confidence {confidence:.3f}")
+                    
                     # Get class name
                     class_name = names.get(class_id, f"Unknown_{class_id}")
+                    print(f"🏷️ Class name: {class_name}")
                     
                     # Get bounding box coordinates
                     coords = box.xyxy[0].tolist()
@@ -1515,12 +1521,16 @@ def process_image(image_path):
                         'confidence': confidence,
                         'bbox': coords
                     })
+            else:
+                print("❌ No detection boxes found")
             
             # Save annotated image
             annotated_image = result.plot()
             result_path = os.path.join(app.config['RESULTS_FOLDER'], 'annotated_' + os.path.basename(image_path))
             cv2_module = get_cv2()
             cv2_module.imwrite(result_path, annotated_image)
+            
+            print(f"✅ Total detections found: {len(detections)}")
             
             return detections, result_path
     
