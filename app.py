@@ -66,29 +66,9 @@ os.makedirs(app.config['RESULTS_FOLDER'], exist_ok=True)
 
 # Load the YOLO model
 MODEL_PATH = 'model/best.pt'
-try:
-    # Fix for PyTorch 2.8+ compatibility
-    import torch.serialization
-    from ultralytics.nn.tasks import DetectionModel
-    torch.serialization.add_safe_globals([DetectionModel])
-    model = YOLO(MODEL_PATH)
-    print("✅ YOLO model loaded successfully!")
-except Exception as e:
-    print(f"Error loading model with safe_globals: {e}")
-    # Fallback: try loading with weights_only=False (if older PyTorch)
-    try:
-        import torch
-        original_load = torch.load
-        def patched_load(*args, **kwargs):
-            kwargs['weights_only'] = False
-            return original_load(*args, **kwargs)
-        torch.load = patched_load
-        model = YOLO(MODEL_PATH)
-        torch.load = original_load
-        print("✅ YOLO model loaded with fallback method!")
-    except Exception as e2:
-        print(f"❌ Model loading failed completely: {e2}")
-        model = None
+print(f"🔄 Loading YOLO model from {MODEL_PATH}...")
+model = YOLO(MODEL_PATH)
+print("✅ YOLO model loaded successfully!")
 
 # Disease information database
 DISEASE_INFO = {

@@ -1,26 +1,21 @@
-# LeafIQ - AI Plant Disease Detection System
-# Core Requirements
-
-# Web Framework
+# Railway Ultra-Optimized Build
 Flask==2.3.3
-Werkzeug==2.3.7
-gunicorn==21.2.0
-
-# AI & Machine Learning
 ultralytics==8.0.196
-torch>=2.0.0,<2.8.0
-torchvision>=0.15.0,<0.23.0
-
-# Image Processing
+Pillow==10.0.1
 opencv-python-headless==4.8.1.78
-Pillow>=10.0.0
-numpy>=1.24.0
-
-# API Integrations
-google-generativeai==0.3.0
-google-api-python-client==2.100.0
 requests==2.31.0
-wikipedia==1.4.0
 
-# Environment & Configuration
+# API dependencies - pinned versions
+google-generativeai==0.3.2
+google-api-python-client==2.108.0
+wikipedia==1.4.0
 python-dotenv==1.0.0
+
+# PyTorch CPU-only minimal
+--index-url https://download.pytorch.org/whl/cpu
+torch==2.0.1
+torchvision==0.15.2
+
+# Deployment
+gunicorn==21.2.0
+Werkzeug==2.3.7
