@@ -1,0 +1,586 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Plant Disease Detection System</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #2c5530 0%, #4a7c59 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+        }
+
+        .header p {
+            font-size: 1.1rem;
+            opacity: 0.9;
+        }
+
+        .main-content {
+            padding: 40px;
+        }
+
+        .upload-section {
+            background: #f8f9fa;
+            border: 3px dashed #4a7c59;
+            border-radius: 10px;
+            padding: 40px;
+            text-align: center;
+            margin-bottom: 30px;
+            transition: all 0.3s ease;
+        }
+
+        .upload-section:hover {
+            background: #e9ecef;
+            border-color: #2c5530;
+        }
+
+        .upload-section.dragover {
+            background: #e8f5e8;
+            border-color: #2c5530;
+        }
+
+        .upload-icon {
+            font-size: 4rem;
+            color: #4a7c59;
+            margin-bottom: 20px;
+        }
+
+        .upload-text {
+            font-size: 1.2rem;
+            color: #333;
+            margin-bottom: 20px;
+        }
+
+        .file-input {
+            display: none;
+        }
+
+        .upload-btn {
+            background: linear-gradient(135deg, #4a7c59 0%, #2c5530 100%);
+            color: white;
+            padding: 12px 30px;
+            border: none;
+            border-radius: 25px;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .upload-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(76, 124, 89, 0.4);
+        }
+
+        .loading {
+            display: none;
+            text-align: center;
+            padding: 30px;
+        }
+
+        .spinner {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #4a7c59;
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 20px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .results-section {
+            display: none;
+            margin-top: 30px;
+        }
+
+        .result-image {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .result-image img {
+            max-width: 100%;
+            height: auto;
+            border-radius: 10px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+        }
+
+        .detections {
+            display: grid;
+            gap: 20px;
+        }
+
+        .detection-card {
+            background: #f8f9fa;
+            border-radius: 10px;
+            padding: 25px;
+            border-left: 5px solid #4a7c59;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+        }
+
+        .detection-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+
+        .disease-name {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: #2c5530;
+        }
+
+        .confidence {
+            background: #4a7c59;
+            color: white;
+            padding: 5px 15px;
+            border-radius: 20px;
+            font-size: 0.9rem;
+        }
+
+        .info-source {
+            background: #6c757d;
+            color: white;
+            padding: 3px 10px;
+            border-radius: 15px;
+            font-size: 0.8rem;
+            opacity: 0.8;
+        }
+
+        .api-status {
+            background: #e9ecef;
+            padding: 10px 15px;
+            border-radius: 5px;
+            margin-bottom: 20px;
+            font-size: 0.9rem;
+            color: #666;
+        }
+
+        .api-status.online {
+            background: #d4edda;
+            color: #155724;
+        }
+
+        .api-status.offline {
+            background: #f8d7da;
+            color: #721c24;
+        }
+
+        .disease-description {
+            color: #666;
+            font-size: 1.1rem;
+            margin-bottom: 20px;
+            line-height: 1.6;
+        }
+
+        .info-section {
+            margin-bottom: 20px;
+        }
+
+        .info-title {
+            font-size: 1.2rem;
+            font-weight: bold;
+            color: #2c5530;
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+        }
+
+        .info-title::before {
+            content: "";
+            display: inline-block;
+            width: 4px;
+            height: 20px;
+            background: #4a7c59;
+            margin-right: 10px;
+        }
+
+        .info-list {
+            list-style: none;
+            padding-left: 20px;
+        }
+
+        .info-list li {
+            margin-bottom: 8px;
+            position: relative;
+            padding-left: 20px;
+            line-height: 1.5;
+        }
+
+        .info-list li::before {
+            content: "•";
+            color: #4a7c59;
+            font-size: 1.2rem;
+            position: absolute;
+            left: 0;
+        }
+
+        .healthy-card {
+            border-left-color: #28a745;
+        }
+
+        .healthy-card .disease-name {
+            color: #28a745;
+        }
+
+        .healthy-card .confidence {
+            background: #28a745;
+        }
+
+        .healthy-card .info-title::before {
+            background: #28a745;
+        }
+
+        .healthy-card .info-list li::before {
+            color: #28a745;
+        }
+
+        .error {
+            background: #f8d7da;
+            color: #721c24;
+            padding: 15px;
+            border-radius: 5px;
+            margin: 20px 0;
+            border: 1px solid #f5c6cb;
+        }
+
+        @media (max-width: 768px) {
+            .main-content {
+                padding: 20px;
+            }
+            
+            .header h1 {
+                font-size: 2rem;
+            }
+            
+            .detection-header {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 10px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🌱 Plant Disease Detection System</h1>
+            <p>Upload a plant image to detect diseases and get detailed treatment recommendations</p>
+        </div>
+
+        <div class="main-content">
+            <div class="api-status" id="apiStatus">
+                🔄 Checking API status...
+            </div>
+
+            <div class="upload-section" id="uploadSection">
+                <div class="upload-icon">📸</div>
+                <div class="upload-text">
+                    Drag and drop your plant image here, or click to select
+                </div>
+                <input type="file" id="fileInput" class="file-input" accept="image/*">
+                <button class="upload-btn" onclick="document.getElementById('fileInput').click()">
+                    Choose Image
+                </button>
+            </div>
+
+            <div class="loading" id="loading">
+                <div class="spinner"></div>
+                <p>Analyzing your plant image... Please wait.</p>
+            </div>
+
+            <div class="results-section" id="results">
+                <div class="result-image" id="resultImage"></div>
+                <div class="detections" id="detections"></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const uploadSection = document.getElementById('uploadSection');
+        const fileInput = document.getElementById('fileInput');
+        const loading = document.getElementById('loading');
+        const results = document.getElementById('results');
+        const resultImage = document.getElementById('resultImage');
+        const detections = document.getElementById('detections');
+        const apiStatus = document.getElementById('apiStatus');
+
+        // Check API status on page load
+        checkApiStatus();
+
+        function checkApiStatus() {
+            fetch('/api/status')
+                .then(response => response.json())
+                .then(data => {
+                    let statusText = '';
+                    let statusClass = 'api-status';
+                    
+                    if (data.external_apis_enabled) {
+                        let availableApis = [];
+                        
+                        if (data.wikipedia_api === 'Available') {
+                            availableApis.push('Wikipedia');
+                        }
+                        
+                        if (data.google_custom_search === 'Configured and Ready') {
+                            availableApis.push('Google Search');
+                        }
+                        
+                        if (data.gemini_ai === 'Configured and Ready') {
+                            availableApis.push('Gemini AI');
+                        }
+                        
+                        if (data.plantnet_api === 'Configured and Ready') {
+                            availableApis.push('PlantNet');
+                        }
+                        
+                        if (availableApis.length > 0) {
+                            statusText = `🌐 Enhanced APIs enabled: ${availableApis.join(', ')} + Local Database`;
+                            statusClass += ' online';
+                        } else {
+                            statusText = '📚 Using comprehensive local disease database';
+                            statusClass += ' offline';
+                        }
+                    } else {
+                        statusText = '📚 Using local disease database only';
+                        statusClass += ' offline';
+                    }
+                    
+                    apiStatus.textContent = statusText;
+                    apiStatus.className = statusClass;
+                })
+                .catch(error => {
+                    apiStatus.textContent = '📚 Using local disease database';
+                    apiStatus.className = 'api-status offline';
+                });
+        }
+
+        // Drag and drop functionality
+        uploadSection.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            uploadSection.classList.add('dragover');
+        });
+
+        uploadSection.addEventListener('dragleave', () => {
+            uploadSection.classList.remove('dragover');
+        });
+
+        uploadSection.addEventListener('drop', (e) => {
+            e.preventDefault();
+            uploadSection.classList.remove('dragover');
+            const files = e.dataTransfer.files;
+            if (files.length > 0) {
+                handleFile(files[0]);
+            }
+        });
+
+        fileInput.addEventListener('change', (e) => {
+            if (e.target.files.length > 0) {
+                handleFile(e.target.files[0]);
+            }
+        });
+
+        function handleFile(file) {
+            if (!file.type.startsWith('image/')) {
+                showError('Please select a valid image file.');
+                return;
+            }
+
+            const formData = new FormData();
+            formData.append('file', file);
+
+            // Show loading
+            loading.style.display = 'block';
+            results.style.display = 'none';
+
+            fetch('/upload', {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                loading.style.display = 'none';
+                
+                if (data.error) {
+                    showError(data.error);
+                } else {
+                    displayResults(data);
+                }
+            })
+            .catch(error => {
+                loading.style.display = 'none';
+                showError('An error occurred while processing your image. Please try again.');
+                console.error('Error:', error);
+            });
+        }
+
+        function displayResults(data) {
+            results.style.display = 'block';
+
+            // Display result image
+            if (data.result_image) {
+                resultImage.innerHTML = `<img src="${data.result_image}" alt="Detection Result">`;
+            }
+
+            // Display detections
+            detections.innerHTML = '';
+            
+            if (data.detections.length === 0) {
+                detections.innerHTML = '<p>No plant diseases detected in this image.</p>';
+            } else {
+                data.detections.forEach(detection => {
+                    const card = createDetectionCard(detection);
+                    detections.appendChild(card);
+                });
+            }
+        }
+
+        function createDetectionCard(detection) {
+            const card = document.createElement('div');
+            card.className = `detection-card ${detection.disease.toLowerCase().includes('healthy') ? 'healthy-card' : ''}`;
+
+            const confidencePercent = Math.round(detection.confidence * 100);
+            
+            let sectionsHtml = '';
+
+            // Add different sections based on available information
+            if (detection.info.causes && detection.info.causes[0] !== 'Information not available') {
+                sectionsHtml += `
+                    <div class="info-section">
+                        <div class="info-title">🔍 Causes</div>
+                        <ul class="info-list">
+                            ${detection.info.causes.map(cause => `<li>${cause}</li>`).join('')}
+                        </ul>
+                    </div>
+                `;
+            }
+
+            if (detection.info.effects && detection.info.effects[0] !== 'Information not available') {
+                sectionsHtml += `
+                    <div class="info-section">
+                        <div class="info-title">⚠️ Effects on Plant</div>
+                        <ul class="info-list">
+                            ${detection.info.effects.map(effect => `<li>${effect}</li>`).join('')}
+                        </ul>
+                    </div>
+                `;
+            }
+
+            if (detection.info.solutions && detection.info.solutions[0] !== 'Consult with a plant pathologist or agricultural extension service') {
+                sectionsHtml += `
+                    <div class="info-section">
+                        <div class="info-title">💊 Treatment Solutions</div>
+                        <ul class="info-list">
+                            ${detection.info.solutions.map(solution => `<li>${solution}</li>`).join('')}
+                        </ul>
+                    </div>
+                `;
+            }
+
+            if (detection.info.prevention && detection.info.prevention[0] !== 'Follow general plant health practices') {
+                sectionsHtml += `
+                    <div class="info-section">
+                        <div class="info-title">🛡️ Prevention Methods</div>
+                        <ul class="info-list">
+                            ${detection.info.prevention.map(prevention => `<li>${prevention}</li>`).join('')}
+                        </ul>
+                    </div>
+                `;
+            }
+
+            // For healthy plants, show different sections
+            if (detection.info.characteristics) {
+                sectionsHtml += `
+                    <div class="info-section">
+                        <div class="info-title">✅ Healthy Characteristics</div>
+                        <ul class="info-list">
+                            ${detection.info.characteristics.map(char => `<li>${char}</li>`).join('')}
+                        </ul>
+                    </div>
+                `;
+            }
+
+            if (detection.info.maintenance) {
+                sectionsHtml += `
+                    <div class="info-section">
+                        <div class="info-title">🌿 Maintenance Tips</div>
+                        <ul class="info-list">
+                            ${detection.info.maintenance.map(tip => `<li>${tip}</li>`).join('')}
+                        </ul>
+                    </div>
+                `;
+            }
+
+            // Show information source
+            const sourceInfo = detection.info.source ? `
+                <div class="info-source">Source: ${detection.info.source}</div>
+            ` : '';
+
+            card.innerHTML = `
+                <div class="detection-header">
+                    <div class="disease-name">${detection.disease}</div>
+                    <div>
+                        <div class="confidence">${confidencePercent}% Confidence</div>
+                        ${sourceInfo}
+                    </div>
+                </div>
+                <div class="disease-description">${detection.info.description}</div>
+                ${sectionsHtml}
+            `;
+
+            return card;
+        }
+
+        function showError(message) {
+            const errorDiv = document.createElement('div');
+            errorDiv.className = 'error';
+            errorDiv.textContent = message;
+            
+            // Remove any existing errors
+            const existingError = document.querySelector('.error');
+            if (existingError) {
+                existingError.remove();
+            }
+            
+            // Add error after upload section
+            uploadSection.parentNode.insertBefore(errorDiv, uploadSection.nextSibling);
+        }
+    </script>
+</body>
+</html>
