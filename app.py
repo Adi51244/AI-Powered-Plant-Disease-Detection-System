@@ -1512,25 +1512,29 @@ def index():
 
 @app.route('/upload', methods=['POST'])
 def upload_file():
-    if 'file' not in request.files:
-        return jsonify({'error': 'No file provided'}), 400
-    
-    file = request.files['file']
-    if file.filename == '':
-        return jsonify({'error': 'No file selected'}), 400
-    
-    if file:
-        # Save uploaded file
-        filename = secure_filename(file.filename)
-        file_path = os.path.join(app.config['UPLOAD_FOLDER'], filename)
-        file.save(file_path)
+    try:
+        if 'file' not in request.files:
+            return jsonify({'error': 'No file provided'}), 400
         
-        # Process image
-        detections, result_path = process_image(file_path)
+        file = request.files['file']
+        if file.filename == '':
+            return jsonify({'error': 'No file selected'}), 400
         
-        # Prepare response
-        response_data = {
-            'detections': [],
+        if file:
+            # Save uploaded file
+            filename = secure_filename(file.filename)
+            file_path = os.path.join(app.config['UPLOAD_FOLDER'], filename)
+            file.save(file_path)
+            
+            print(f"🔄 Processing image: {filename}")
+            
+            # Process image
+            detections, result_path = process_image(file_path)
+            print(f"✅ Image processed successfully")
+            
+            # Prepare response
+            response_data = {
+                'detections': [],
             'result_image': None
         }
         
@@ -1568,6 +1572,10 @@ def upload_file():
             })
         
         return jsonify(response_data)
+        
+    except Exception as e:
+        print(f"❌ Error processing image: {str(e)}")
+        return jsonify({'error': 'An error occurred while processing your image. Please try again.'}), 500
 
 @app.route('/api/status')
 def api_status():
