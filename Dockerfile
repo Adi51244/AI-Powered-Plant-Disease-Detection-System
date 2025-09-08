@@ -38,5 +38,5 @@ RUN mkdir -p uploads results
 # Expose port
 EXPOSE 8080
 
-# Start the application with Python script
-CMD ["python3", "start.py"]
+# Start the Flask application directly
+CMD ["python3", "app.py"]
