@@ -1,4 +1,6 @@
 # Railway Ultra-Optimized Build
+--extra-index-url https://download.pytorch.org/whl/cpu
+
 Flask==2.3.3
 ultralytics==8.0.196
 Pillow==10.0.1
@@ -11,10 +13,9 @@ google-api-python-client==2.108.0
 wikipedia==1.4.0
 python-dotenv==1.0.0
 
-# PyTorch CPU-only minimal
---index-url https://download.pytorch.org/whl/cpu
-torch==2.0.1
-torchvision==0.15.2
+# PyTorch CPU-only
+torch==2.0.1+cpu
+torchvision==0.15.2+cpu
 
 # Deployment
 gunicorn==21.2.0
