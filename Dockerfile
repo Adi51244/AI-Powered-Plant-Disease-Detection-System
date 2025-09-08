@@ -39,4 +39,4 @@ RUN mkdir -p uploads results
 EXPOSE 8080
 
 # Start with shell to enable environment variable expansion
-CMD ["sh", "-c", "gunicorn --bind 0.0.0.0:$PORT --timeout 600 app:app"]
+CMD sh -c "gunicorn --bind 0.0.0.0:\$PORT app:app --timeout 900 --keep-alive 2 --workers 1 --worker-class sync --worker-connections 50 --max-requests 50 --max-requests-jitter 5 --preload"
