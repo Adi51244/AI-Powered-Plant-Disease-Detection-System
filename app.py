@@ -994,19 +994,35 @@ DISEASE PREVENTION: List 3-4 preventive measures.
 Use simple, clear language for farmers."""
         else:
             # Create a detailed prompt for diseased plants
-            prompt = f"""As an agricultural pathologist, provide information about {disease_name} in exactly this format:
+            prompt = f"""As an agricultural pathologist, provide comprehensive information about {disease_name} in exactly this format:
 
-DESCRIPTION: Write 2-3 sentences about this plant disease.
+DESCRIPTION: Write a detailed paragraph (at least 100 words) about this plant disease, including its appearance, symptoms, affected plant parts, pathogen type, and how it manifests on the plant. Be thorough and complete.
 
-CAUSES: List 3-4 main causes of this disease.
+CAUSES: List the main causes of this disease:
+- Primary pathogen or environmental factor
+- Environmental conditions that favor development
+- Plant stress factors that contribute
+- Transmission methods
 
-EFFECTS: List 3-4 visible symptoms and damage.
+EFFECTS: List the visible symptoms and impacts:
+- Visible symptoms on leaves, stems, fruits
+- Impact on plant growth and development
+- Effects on crop yield and quality
+- Long-term consequences if untreated
 
-TREATMENT: List 3-4 specific treatments or fungicides.
+TREATMENT: List specific treatment options:
+- Recommended fungicides or bactericides
+- Cultural management practices
+- Immediate action steps for infected plants
+- Organic treatment alternatives
 
-PREVENTION: List 3-4 preventive measures.
+PREVENTION: List preventive measures:
+- Best practices for disease prevention
+- Resistant varieties if available
+- Proper sanitation and hygiene practices
+- Crop rotation and spacing recommendations
 
-Use clear, practical language for farmers."""
+Provide complete, detailed information in each section. Do not truncate any section."""
 
         # Generate response
         response = model.generate_content(prompt)
@@ -1033,7 +1049,7 @@ Use clear, practical language for farmers."""
     return None
 
 def parse_structured_gemini_response(text, is_healthy=False):
-    """Parse Gemini's structured response into clean sections"""
+    """Parse Gemini's structured response into clean, well-formatted sections"""
     sections = {
         'description': '',
         'causes': [],
@@ -1044,55 +1060,150 @@ def parse_structured_gemini_response(text, is_healthy=False):
     
     try:
         # Clean the text
-        text = text.replace('*', '').replace('#', '')
+        text = text.replace('*', '').replace('#', '').strip()
         
-        # Split by sections
-        if 'DESCRIPTION:' in text:
-            parts = text.split('DESCRIPTION:')[1]
-            desc_end = parts.find('\n\n')
-            if desc_end > 0:
-                sections['description'] = parts[:desc_end].strip()
+        # Check if response has structured format
+        has_sections = any(keyword in text.upper() for keyword in 
+                          ['CAUSES:', 'EFFECTS:', 'TREATMENT:', 'PREVENTION:', 'SOLUTIONS:'])
         
-        # Extract lists from sections
-        section_patterns = {
-            'causes': r'CAUSES?:(.*?)(?=EFFECTS?:|TREATMENT:|PREVENTION:|$)',
-            'effects': r'EFFECTS?:(.*?)(?=TREATMENT:|PREVENTION:|$)',
-            'solutions': r'TREATMENT:(.*?)(?=PREVENTION:|$)',
-            'prevention': r'(?:DISEASE )?PREVENTION:(.*?)(?=$)'
-        }
+        if has_sections:
+            # Parse structured response with improved formatting
+            
+            # Extract description first - handle multiple patterns
+            desc_patterns = [
+                r'DESCRIPTION:\s*(.*?)(?=\s*CAUSES?:|EFFECTS?:|TREATMENT:|PREVENTION:|$)',
+                r'^(.*?)(?=\s*CAUSES?:|EFFECTS?:|TREATMENT:|PREVENTION:|$)'
+            ]
+            
+            for pattern in desc_patterns:
+                match = re.search(pattern, text, re.DOTALL | re.IGNORECASE)
+                if match:
+                    desc = match.group(1).strip()
+                    if len(desc) > 50:  # Good description length
+                        # Clean and format description with reduced line spacing
+                        desc = re.sub(r'\s+', ' ', desc)  # Normalize whitespace
+                        desc = desc.replace('. ', '.\n')  # Add single line breaks instead of double
+                        sections['description'] = desc.strip()
+                        break
+            
+            # Extract sections with improved patterns and formatting
+            section_patterns = {
+                'causes': r'CAUSES?:\s*(.*?)(?=\s*EFFECTS?:|TREATMENT:|SOLUTIONS?:|PREVENTION:|$)',
+                'effects': r'EFFECTS?:\s*(.*?)(?=\s*TREATMENT:|SOLUTIONS?:|PREVENTION:|$)',
+                'solutions': r'(?:TREATMENT|SOLUTIONS?):\s*(.*?)(?=\s*PREVENTION:|$)',
+                'prevention': r'(?:DISEASE )?PREVENTION:\s*(.*?)(?=\s*$)'
+            }
+            
+            if is_healthy:
+                section_patterns.update({
+                    'causes': r'(?:GROWING CONDITIONS|CONDITIONS):\s*(.*?)(?=\s*CHARACTERISTICS:|MAINTENANCE:|PREVENTION:|$)',
+                    'effects': r'CHARACTERISTICS:\s*(.*?)(?=\s*MAINTENANCE:|PREVENTION:|$)',
+                    'solutions': r'(?:MAINTENANCE|CARE):\s*(.*?)(?=\s*PREVENTION:|$)'
+                })
+            
+            for key, pattern in section_patterns.items():
+                match = re.search(pattern, text, re.DOTALL | re.IGNORECASE)
+                if match:
+                    content = match.group(1).strip()
+                    items = []
+                    
+                    # Multiple parsing strategies for different formats
+                    
+                    # Strategy 1: Look for explicit bullet points or numbered lists
+                    bullet_patterns = [
+                        r'[-•]\s*([^-•\n]+(?:\n(?![-•])[^\n]*)*)',  # Bullet points
+                        r'\d+\.\s*([^\d\n]+(?:\n(?!\d+\.)[^\n]*)*)',  # Numbered lists
+                    ]
+                    
+                    found_items = []
+                    for bullet_pattern in bullet_patterns:
+                        matches = re.findall(bullet_pattern, content, re.MULTILINE)
+                        if matches:
+                            found_items.extend(matches)
+                    
+                    # Strategy 2: Split by sentences if no clear formatting
+                    if not found_items:
+                        # Split by common sentence delimiters
+                        sentences = re.split(r'[.;]\s+(?=[A-Z])', content)
+                        found_items = [s.strip() for s in sentences if len(s.strip()) > 15]
+                    
+                    # Strategy 3: Split by semicolons or line breaks
+                    if not found_items:
+                        parts = re.split(r'[;\n]+', content)
+                        found_items = [p.strip() for p in parts if len(p.strip()) > 10]
+                    
+                    # Clean and format items
+                    for item in found_items[:5]:  # Limit to 5 items
+                        # Clean the item
+                        clean_item = re.sub(r'^[-•\d.\s]*', '', item).strip()
+                        clean_item = re.sub(r'\s+', ' ', clean_item)  # Normalize whitespace
+                        
+                        if len(clean_item) > 5:
+                            # Ensure proper capitalization
+                            clean_item = clean_item[0].upper() + clean_item[1:] if clean_item else ''
+                            
+                            # Ensure proper ending punctuation
+                            if clean_item and not clean_item.endswith(('.', '!', '?', ':')):
+                                clean_item += '.'
+                            
+                            items.append(clean_item[:300])  # Reasonable length limit
+                    
+                    sections[key] = items if items else []
         
-        if is_healthy:
-            section_patterns.update({
-                'causes': r'GROWING CONDITIONS:(.*?)(?=CHARACTERISTICS:|MAINTENANCE:|PREVENTION:|$)',
-                'effects': r'CHARACTERISTICS:(.*?)(?=MAINTENANCE:|PREVENTION:|$)',
-                'solutions': r'MAINTENANCE:(.*?)(?=PREVENTION:|$)'
-            })
-        
-        for key, pattern in section_patterns.items():
-            match = re.search(pattern, text, re.DOTALL | re.IGNORECASE)
-            if match:
-                content = match.group(1).strip()
-                # Extract bullet points or numbered lists
-                items = []
-                for line in content.split('\n'):
-                    line = line.strip()
-                    if line and (line.startswith('-') or line.startswith('•') or 
-                               re.match(r'^\d+\.', line) or len(line) > 10):
-                        # Clean up the line
-                        clean_line = re.sub(r'^[-•\d.\s]*', '', line).strip()
-                        if clean_line and len(clean_line) > 5:
-                            items.append(clean_line[:200])  # Limit length
+        else:
+            # Handle unstructured response with intelligent parsing
+            sentences = re.split(r'[.!?]\s+', text)
+            
+            # Clean and format the full text as description
+            full_desc = re.sub(r'\s+', ' ', text).strip()
+            full_desc = full_desc.replace('. ', '.\n')  # Add single line breaks instead of double
+            sections['description'] = full_desc
+            
+            # Intelligent keyword-based extraction
+            causes_keywords = ['caused by', 'due to', 'infection', 'pathogen', 'fungus', 'bacteria', 'virus', 'environmental']
+            effects_keywords = ['symptoms', 'damage', 'affects', 'reduces', 'impact', 'yield', 'production', 'lesions']
+            treatment_keywords = ['treatment', 'control', 'manage', 'fungicide', 'spray', 'remove', 'prune', 'apply']
+            prevention_keywords = ['prevent', 'avoid', 'resistant', 'rotation', 'sanitation', 'hygiene', 'spacing']
+            
+            # Extract and format sections based on keywords
+            keyword_sections = [
+                ('causes', causes_keywords),
+                ('effects', effects_keywords),
+                ('solutions', treatment_keywords),
+                ('prevention', prevention_keywords)
+            ]
+            
+            for section_name, keywords in keyword_sections:
+                section_items = []
+                for sentence in sentences:
+                    sentence = sentence.strip()
+                    if any(keyword in sentence.lower() for keyword in keywords) and len(sentence) > 20:
+                        # Clean and format
+                        clean_sentence = re.sub(r'\s+', ' ', sentence).strip()
+                        clean_sentence = clean_sentence[0].upper() + clean_sentence[1:] if clean_sentence else ''
+                        
+                        if not clean_sentence.endswith(('.', '!', '?', ':')):
+                            clean_sentence += '.'
+                            
+                        section_items.append(clean_sentence[:250])
                 
-                sections[key] = items[:4]  # Limit to 4 items
+                sections[section_name] = section_items[:3]  # Limit to 3 items
         
-        # If no description found, use first part of text
-        if not sections['description']:
-            sections['description'] = text[:300] + '...' if len(text) > 300 else text
+        # Ensure we have at least a description
+        if not sections['description'] and text:
+            clean_text = re.sub(r'\s+', ' ', text).strip()
+            clean_text = clean_text.replace('. ', '.\n')  # Single line breaks
+            sections['description'] = clean_text[:1000] if len(clean_text) > 1000 else clean_text
+            
+        # Final cleanup - remove empty items
+        for key in ['causes', 'effects', 'solutions', 'prevention']:
+            sections[key] = [item for item in sections[key] if item and len(item.strip()) > 5]
             
     except Exception as e:
         print(f"Error parsing Gemini response: {e}")
-        # Fallback to simple description
-        sections['description'] = text[:500] + '...' if len(text) > 500 else text
+        # Fallback - return cleaned text as description
+        clean_text = re.sub(r'\s+', ' ', text).strip() if text else ''
+        sections['description'] = clean_text[:1000] if len(clean_text) > 1000 else clean_text
     
     return sections
 

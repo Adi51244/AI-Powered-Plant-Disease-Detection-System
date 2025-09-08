@@ -1,8 +1,8 @@
 # 🍃 LeafIQ - AI-Powered Plant Disease Detection System
 
 <div align="center">
-  
-![LeafIQ Logo](https://img.shields.io/badge/🍃_LeafIQ-AI%20Plant%20Doctor-brightgreen?style=for-the-badge&logoColor=white)
+
+<img src="static/images/LeafIQ.png" alt="LeafIQ Logo" width="200" height="auto">
 
 **Your Intelligent Plant Health Companion**
 

@@ -3,7 +3,11 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Plant Disease Detection System</title>
+    <title>LeafIQ - AI-Powered Plant Disease Detection</title>
+    <link rel="icon" type="image/png" href="{{ url_for('static', filename='images/LeafIQ.png') }}">
+    <link rel="shortcut icon" type="image/png" href="{{ url_for('static', filename='images/LeafIQ.png') }}">
+    <meta name="description" content="LeafIQ - Intelligent Plant Disease Detection System powered by AI. Detect plant diseases instantly with computer vision and get comprehensive treatment recommendations.">
+    <meta name="keywords" content="plant disease detection, AI agriculture, plant pathology, LeafIQ, computer vision">
     <style>
         * {
             margin: 0;
@@ -34,14 +38,31 @@
             text-align: center;
         }
 
+        .header-logo {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 15px;
+            flex-wrap: wrap;
+        }
+
+        .header-logo img {
+            height: 80px;
+            width: auto;
+            margin-right: 15px;
+        }
+
         .header h1 {
             font-size: 2.5rem;
-            margin-bottom: 10px;
+            margin: 0;
+            display: flex;
+            align-items: center;
         }
 
         .header p {
             font-size: 1.1rem;
             opacity: 0.9;
+            margin-top: 10px;
         }
 
         .main-content {
@@ -286,52 +307,97 @@
         }
 
         .disease-description {
-            color: #666;
-            font-size: 1.1rem;
-            margin-bottom: 20px;
-            line-height: 1.6;
+            color: #555;
+            font-size: 1rem;
+            margin-bottom: 25px;
+            line-height: 1.4;
+            text-align: justify;
+            white-space: pre-line; /* Preserve line breaks for better formatting */
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 8px;
+            border-left: 4px solid #4a7c59;
         }
 
         .info-section {
-            margin-bottom: 20px;
+            margin-bottom: 25px;
+            background: #ffffff;
+            border-radius: 8px;
+            padding: 20px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+            border-left: 4px solid transparent;
+        }
+
+        .info-section.causes {
+            border-left-color: #dc3545;
+        }
+
+        .info-section.effects {
+            border-left-color: #fd7e14;
+        }
+
+        .info-section.solutions {
+            border-left-color: #28a745;
+        }
+
+        .info-section.prevention {
+            border-left-color: #007bff;
         }
 
         .info-title {
-            font-size: 1.2rem;
-            font-weight: bold;
+            font-size: 1.25rem;
+            font-weight: 600;
             color: #2c5530;
-            margin-bottom: 10px;
+            margin-bottom: 15px;
             display: flex;
             align-items: center;
+            text-transform: none;
         }
 
-        .info-title::before {
-            content: "";
-            display: inline-block;
-            width: 4px;
-            height: 20px;
-            background: #4a7c59;
-            margin-right: 10px;
+        .info-title .icon {
+            font-size: 1.4rem;
+            margin-right: 12px;
+            width: 24px;
+            text-align: center;
         }
+
+        .causes .info-title { color: #dc3545; }
+        .effects .info-title { color: #fd7e14; }
+        .solutions .info-title { color: #28a745; }
+        .prevention .info-title { color: #007bff; }
 
         .info-list {
             list-style: none;
-            padding-left: 20px;
+            padding-left: 0;
+            margin: 0;
         }
 
         .info-list li {
-            margin-bottom: 8px;
+            margin-bottom: 12px;
             position: relative;
-            padding-left: 20px;
-            line-height: 1.5;
+            padding-left: 28px;
+            line-height: 1.6;
+            color: #555;
+            font-size: 0.95rem;
         }
 
         .info-list li::before {
-            content: "•";
-            color: #4a7c59;
-            font-size: 1.2rem;
+            content: "▸";
+            color: inherit;
+            font-size: 1.1rem;
             position: absolute;
-            left: 0;
+            left: 8px;
+            top: 2px;
+            font-weight: bold;
+        }
+
+        .causes .info-list li::before { color: #dc3545; }
+        .effects .info-list li::before { color: #fd7e14; }
+        .solutions .info-list li::before { color: #28a745; }
+        .prevention .info-list li::before { color: #007bff; }
+
+        .info-list li:last-child {
+            margin-bottom: 0;
         }
 
         .healthy-card {
@@ -346,8 +412,8 @@
             background: #28a745;
         }
 
-        .healthy-card .info-title::before {
-            background: #28a745;
+        .healthy-card .disease-description {
+            border-left-color: #28a745;
         }
 
         .healthy-card .info-list li::before {
@@ -370,6 +436,16 @@
             
             .header h1 {
                 font-size: 2rem;
+            }
+
+            .header-logo {
+                flex-direction: column;
+                gap: 10px;
+            }
+
+            .header-logo img {
+                height: 70px;
+                margin-right: 0;
             }
             
             .detection-header {
@@ -409,7 +485,10 @@
 <body>
     <div class="container">
         <div class="header">
-            <h1>🌱 Plant Disease Detection System</h1>
+            <div class="header-logo">
+                <img src="{{ url_for('static', filename='images/LeafIQ.png') }}" alt="LeafIQ Logo">
+                <h1>LeafIQ - AI-Powered Plant Disease Detection</h1>
+            </div>
             <p>Upload a plant image to detect diseases and get detailed treatment recommendations</p>
         </div>
 
@@ -680,8 +759,8 @@
             // Add different sections based on available information
             if (detection.info.causes && detection.info.causes[0] !== 'Information not available') {
                 sectionsHtml += `
-                    <div class="info-section">
-                        <div class="info-title">🔍 Causes</div>
+                    <div class="info-section causes">
+                        <div class="info-title"><span class="icon">🔍</span> Causes</div>
                         <ul class="info-list">
                             ${detection.info.causes.map(cause => `<li>${cause}</li>`).join('')}
                         </ul>
@@ -691,8 +770,8 @@
 
             if (detection.info.effects && detection.info.effects[0] !== 'Information not available') {
                 sectionsHtml += `
-                    <div class="info-section">
-                        <div class="info-title">⚠️ Effects on Plant</div>
+                    <div class="info-section effects">
+                        <div class="info-title"><span class="icon">⚠️</span> Effects on Plant</div>
                         <ul class="info-list">
                             ${detection.info.effects.map(effect => `<li>${effect}</li>`).join('')}
                         </ul>
@@ -702,8 +781,8 @@
 
             if (detection.info.solutions && detection.info.solutions[0] !== 'Consult with a plant pathologist or agricultural extension service') {
                 sectionsHtml += `
-                    <div class="info-section">
-                        <div class="info-title">💊 Treatment Solutions</div>
+                    <div class="info-section solutions">
+                        <div class="info-title"><span class="icon">💊</span> Treatment Solutions</div>
                         <ul class="info-list">
                             ${detection.info.solutions.map(solution => `<li>${solution}</li>`).join('')}
                         </ul>
@@ -713,8 +792,8 @@
 
             if (detection.info.prevention && detection.info.prevention[0] !== 'Follow general plant health practices') {
                 sectionsHtml += `
-                    <div class="info-section">
-                        <div class="info-title">🛡️ Prevention Methods</div>
+                    <div class="info-section prevention">
+                        <div class="info-title"><span class="icon">🛡️</span> Prevention Methods</div>
                         <ul class="info-list">
                             ${detection.info.prevention.map(prevention => `<li>${prevention}</li>`).join('')}
                         </ul>
@@ -725,8 +804,8 @@
             // For healthy plants, show different sections
             if (detection.info.characteristics) {
                 sectionsHtml += `
-                    <div class="info-section">
-                        <div class="info-title">✅ Healthy Characteristics</div>
+                    <div class="info-section effects">
+                        <div class="info-title"><span class="icon">✅</span> Healthy Characteristics</div>
                         <ul class="info-list">
                             ${detection.info.characteristics.map(char => `<li>${char}</li>`).join('')}
                         </ul>
@@ -736,8 +815,8 @@
 
             if (detection.info.maintenance) {
                 sectionsHtml += `
-                    <div class="info-section">
-                        <div class="info-title">🌿 Maintenance Tips</div>
+                    <div class="info-section solutions">
+                        <div class="info-title"><span class="icon">🌿</span> Maintenance Tips</div>
                         <ul class="info-list">
                             ${detection.info.maintenance.map(tip => `<li>${tip}</li>`).join('')}
                         </ul>
