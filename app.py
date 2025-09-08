@@ -56,7 +56,8 @@ try:
     import torch.serialization
     from ultralytics.nn.tasks import DetectionModel
     torch.serialization.add_safe_globals([DetectionModel])
-    model = YOLO(MODEL_PATH)
+    # Load model with memory optimization
+    model = YOLO(MODEL_PATH, device='cpu')  # Force CPU to avoid GPU memory issues
     print("✅ YOLO model loaded successfully!")
 except Exception as e:
     print(f"Error loading model with safe_globals: {e}")
@@ -68,7 +69,7 @@ except Exception as e:
             kwargs['weights_only'] = False
             return original_load(*args, **kwargs)
         torch.load = patched_load
-        model = YOLO(MODEL_PATH)
+        model = YOLO(MODEL_PATH, device='cpu')  # Force CPU
         torch.load = original_load
         print("✅ YOLO model loaded with fallback method!")
     except Exception as e2:
@@ -1556,15 +1557,22 @@ def upload_file():
 @app.route('/api/status')
 def api_status():
     """Check API availability status"""
+    import os
     status = {
         'external_apis_enabled': USE_EXTERNAL_APIs,
         'yolo_model': 'Loaded' if model is not None else 'Failed to load',
         'wikipedia_api': 'Available',
-        'google_custom_search': 'Not configured',
-        'gemini_ai': 'Not configured',
-        'plantnet_api': 'Not configured',
+        'google_custom_search': 'Configured' if os.getenv('GOOGLE_API_KEY') else 'Not configured - Add GOOGLE_API_KEY env var',
+        'gemini_ai': 'Configured' if os.getenv('GEMINI_API_KEY') else 'Not configured - Add GEMINI_API_KEY env var',
+        'plantnet_api': 'Configured' if os.getenv('PLANTNET_API_KEY') else 'Not configured - Add PLANTNET_API_KEY env var',
         'local_database': 'Available',
-        'total_diseases_in_db': len(DISEASE_INFO)
+        'total_diseases_in_db': len(DISEASE_INFO),
+        'environment_check': {
+            'GEMINI_API_KEY': 'Set' if os.getenv('GEMINI_API_KEY') else 'Missing',
+            'GOOGLE_API_KEY': 'Set' if os.getenv('GOOGLE_API_KEY') else 'Missing',
+            'GOOGLE_SEARCH_ENGINE_ID': 'Set' if os.getenv('GOOGLE_SEARCH_ENGINE_ID') else 'Missing',
+            'PLANTNET_API_KEY': 'Set' if os.getenv('PLANTNET_API_KEY') else 'Missing'
+        }
     }
     
     # Test Wikipedia API
