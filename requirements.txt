@@ -4,6 +4,7 @@
 # Web Framework
 Flask==2.3.3
 Werkzeug==2.3.7
+gunicorn==21.2.0
 
 # AI & Machine Learning
 ultralytics==8.0.196
