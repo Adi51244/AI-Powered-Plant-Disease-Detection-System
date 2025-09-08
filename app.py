@@ -71,7 +71,6 @@ try:
     import torch.serialization
     from ultralytics.nn.tasks import DetectionModel
     torch.serialization.add_safe_globals([DetectionModel])
-    # Load model without device parameter for compatibility
     model = YOLO(MODEL_PATH)
     print("✅ YOLO model loaded successfully!")
 except Exception as e:
@@ -84,7 +83,7 @@ except Exception as e:
             kwargs['weights_only'] = False
             return original_load(*args, **kwargs)
         torch.load = patched_load
-        model = YOLO(MODEL_PATH)  # Remove device parameter
+        model = YOLO(MODEL_PATH)
         torch.load = original_load
         print("✅ YOLO model loaded with fallback method!")
     except Exception as e2:
