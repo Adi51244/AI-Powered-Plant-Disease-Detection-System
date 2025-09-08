@@ -1,20 +1,18 @@
-# Use Python 3.11 slim image
-FROM python:3.11-slim
+# Use Python 3.11 on Ubuntu 22.04 for stable packages
+FROM python:3.11-slim-bullseye
 
 # Install system dependencies for OpenCV
 RUN apt-get update && apt-get install -y \
     libgl1-mesa-glx \
-    libgl1-mesa-dri \
     libglib2.0-0 \
-    libglib2.0-dev \
     libsm6 \
     libxext6 \
-    libxrender-dev \
+    libxrender1 \
     libgomp1 \
     libgthread-2.0-0 \
     libgtk-3-0 \
     ffmpeg \
-    libavcodec-extra \
+    libavcodec58 \
     && rm -rf /var/lib/apt/lists/*
 
 # Set environment variables for headless operation
