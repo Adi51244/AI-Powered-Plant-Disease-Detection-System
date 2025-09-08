@@ -14,9 +14,9 @@
 [![Gemini AI](https://img.shields.io/badge/Gemini_AI-Integrated-purple?style=flat-square&logo=google)](https://ai.google.dev)
 [![License](https://img.shields.io/badge/License-MIT-green?style=flat-square)](LICENSE)
 
-### 🌐 **[🚀 Try LeafIQ Live Demo](https://leafiq-plant-disease-detection.onrender.com)**
+### 🌐 **[🚀 Try LeafIQ Live Demo](https://leafiq.up.railway.app)**
 
-> **Live at**: https://leafiq-plant-disease-detection.onrender.com  
+> **Live at**: https://leafiq.up.railway.app  
 > Upload plant images instantly and get AI-powered disease analysis with treatment recommendations!
 
 </div>
@@ -633,6 +633,6 @@ If LeafIQ helped you, consider:
 [![GitHub issues](https://img.shields.io/github/issues/Adi51244/AI-Powered-Plant-Disease-Detection-System)](https://github.com/Adi51244/AI-Powered-Plant-Disease-Detection-System/issues)
 [![GitHub pull requests](https://img.shields.io/github/issues-pr/Adi51244/AI-Powered-Plant-Disease-Detection-System)](https://github.com/Adi51244/AI-Powered-Plant-Disease-Detection-System/pulls)
 
-**[🚀 Live Demo](https://leafiq-plant-disease-detection.onrender.com)** • **[🏠 Home](https://github.com/Adi51244/AI-Powered-Plant-Disease-Detection-System)** • **[📖 Docs](https://github.com/Adi51244/AI-Powered-Plant-Disease-Detection-System/wiki)** • **[🐛 Issues](https://github.com/Adi51244/AI-Powered-Plant-Disease-Detection-System/issues)** • **[💬 Discussions](https://github.com/Adi51244/AI-Powered-Plant-Disease-Detection-System/discussions)**
+**[🚀 Live Demo](https://leafiq.up.railway.app)** • **[🏠 Home](https://github.com/Adi51244/AI-Powered-Plant-Disease-Detection-System)** • **[📖 Docs](https://github.com/Adi51244/AI-Powered-Plant-Disease-Detection-System/wiki)** • **[🐛 Issues](https://github.com/Adi51244/AI-Powered-Plant-Disease-Detection-System/issues)** • **[💬 Discussions](https://github.com/Adi51244/AI-Powered-Plant-Disease-Detection-System/discussions)**
 
 </div>
