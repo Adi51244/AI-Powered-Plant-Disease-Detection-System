@@ -37,11 +37,38 @@ coverage.xml
 ehthumbs.db
 Thumbs.db
 
-# Project specific
-*.jpg
-*.png
-*.jpeg
-test/
+# Project specific - keep minimal test images for model validation
+test/AppleCedarRust1.JPG
+test/AppleCedarRust2.JPG
+test/AppleCedarRust3.JPG
+test/AppleScab1.JPG
+test/AppleScab2.JPG
+test/CornCommonRust1.JPG
+test/CornCommonRust2.JPG
+test/plant3.jpg
+test/plant4.jpg
+test/plant5.jpg
+test/plant6.jpg
+test/PotatoEarlyBlight2.JPG
+test/PotatoEarlyBlight3.JPG
+test/PotatoEarlyBlight4.JPG
+test/PotatoEarlyBlight5.JPG
+test/PotatoHealthy1.JPG
+test/TomatoEarlyBlight1.JPG
+test/TomatoEarlyBlight2.JPG
+test/TomatoEarlyBlight3.JPG
+test/TomatoEarlyBlight4.JPG
+test/TomatoEarlyBlight5.JPG
+test/TomatoEarlyBlight6.JPG
+test/TomatoHealthy1.JPG
+test/TomatoHealthy3.JPG
+test/TomatoHealthy4.JPG
+test/TomatoYellowCurlVirus1.JPG
+test/TomatoYellowCurlVirus2.JPG
+test/TomatoYellowCurlVirus3.JPG
+test/TomatoYellowCurlVirus4.JPG
+test/TomatoYellowCurlVirus5.JPG
+test/TomatoYellowCurlVirus6.JPG
 uploads/
 results/
 *.pt.backup
