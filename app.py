@@ -103,11 +103,18 @@ def get_yolo_model():
     """Lazy load YOLO model"""
     global model, YOLO
     if model is None:
-        if YOLO is None:
-            from ultralytics import YOLO
-        print(f"🔄 Loading YOLO model from {MODEL_PATH}...")
-        model = YOLO(MODEL_PATH)
-        print("✅ YOLO model loaded successfully!")
+        try:
+            if YOLO is None:
+                print("🔄 Importing ultralytics...")
+                from ultralytics import YOLO
+                print("✅ Ultralytics imported successfully")
+            print(f"🔄 Loading YOLO model from {MODEL_PATH}...")
+            model = YOLO(MODEL_PATH)
+            print(f"✅ YOLO model loaded successfully! Model has {len(model.names)} classes")
+            print(f"📋 Available classes: {list(model.names.values())[:10]}...")  # Show first 10 classes
+        except Exception as e:
+            print(f"❌ Error loading YOLO model: {e}")
+            return None
     return model
 
 # Disease information database
@@ -1478,12 +1485,16 @@ def get_disease_info(disease_name, use_api=True):
 def process_image(image_path):
     """Process image with YOLO model and return results"""
     try:
+        print(f"🔄 Starting image processing for: {image_path}")
+        
         # Check if model loaded successfully
         # Get YOLO model (lazy loading)
         model = get_yolo_model()
         if model is None:
             raise Exception("YOLO model not loaded properly")
             
+        print(f"🔄 Running YOLO inference on {image_path}...")
+        
         # Run inference with lower confidence threshold
         results = model(image_path, conf=0.1)  # Lower confidence to 10%
         
@@ -1524,11 +1535,17 @@ def process_image(image_path):
             else:
                 print("❌ No detection boxes found")
             
-            # Save annotated image
-            annotated_image = result.plot()
-            result_path = os.path.join(app.config['RESULTS_FOLDER'], 'annotated_' + os.path.basename(image_path))
-            cv2_module = get_cv2()
-            cv2_module.imwrite(result_path, annotated_image)
+            # Save annotated image (optional - don't fail if cv2 has issues)
+            result_path = None
+            try:
+                annotated_image = result.plot()
+                result_path = os.path.join(app.config['RESULTS_FOLDER'], 'annotated_' + os.path.basename(image_path))
+                cv2_module = get_cv2()
+                cv2_module.imwrite(result_path, annotated_image)
+                print(f"✅ Saved annotated image: {result_path}")
+            except Exception as cv2_error:
+                print(f"⚠️ Could not save annotated image (cv2 error): {cv2_error}")
+                # Continue without saving the image - detection still works
             
             print(f"✅ Total detections found: {len(detections)}")
             
