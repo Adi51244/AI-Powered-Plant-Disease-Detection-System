@@ -93,11 +93,94 @@
             font-size: 1rem;
             cursor: pointer;
             transition: all 0.3s ease;
+            margin: 5px;
         }
 
         .upload-btn:hover {
             transform: translateY(-2px);
             box-shadow: 0 5px 15px rgba(76, 124, 89, 0.4);
+        }
+
+        .camera-btn {
+            background: linear-gradient(135deg, #007bff 0%, #0056b3 100%);
+            color: white;
+            padding: 12px 30px;
+            border: none;
+            border-radius: 25px;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin: 5px;
+        }
+
+        .camera-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0, 123, 255, 0.4);
+        }
+
+        .camera-section {
+            display: none;
+            background: #f8f9fa;
+            border: 2px solid #007bff;
+            border-radius: 10px;
+            padding: 20px;
+            margin-top: 20px;
+            text-align: center;
+        }
+
+        .camera-video {
+            max-width: 100%;
+            height: auto;
+            border-radius: 10px;
+            margin-bottom: 15px;
+            background: #000;
+        }
+
+        .camera-controls {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .capture-btn {
+            background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+            color: white;
+            padding: 12px 24px;
+            border: none;
+            border-radius: 25px;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .capture-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(40, 167, 69, 0.4);
+        }
+
+        .close-camera-btn {
+            background: linear-gradient(135deg, #dc3545 0%, #c82333 100%);
+            color: white;
+            padding: 12px 24px;
+            border: none;
+            border-radius: 25px;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .close-camera-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(220, 53, 69, 0.4);
+        }
+
+        .button-group {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            flex-wrap: wrap;
+            margin-top: 10px;
         }
 
         .loading {
@@ -294,6 +377,32 @@
                 align-items: flex-start;
                 gap: 10px;
             }
+
+            .button-group {
+                flex-direction: column;
+                align-items: center;
+            }
+
+            .upload-btn, .camera-btn {
+                width: 200px;
+                margin: 5px 0;
+            }
+
+            .camera-controls {
+                flex-direction: column;
+                align-items: center;
+            }
+
+            .capture-btn, .close-camera-btn {
+                width: 150px;
+                margin: 5px 0;
+            }
+
+            .camera-video {
+                width: 100%;
+                max-height: 300px;
+                object-fit: cover;
+            }
         }
     </style>
 </head>
@@ -312,12 +421,31 @@
             <div class="upload-section" id="uploadSection">
                 <div class="upload-icon">📸</div>
                 <div class="upload-text">
-                    Drag and drop your plant image here, or click to select
+                    Drag and drop your plant image here, or use the options below
                 </div>
                 <input type="file" id="fileInput" class="file-input" accept="image/*">
-                <button class="upload-btn" onclick="document.getElementById('fileInput').click()">
-                    Choose Image
-                </button>
+                <div class="button-group">
+                    <button class="upload-btn" onclick="document.getElementById('fileInput').click()">
+                        📁 Choose Image
+                    </button>
+                    <button class="camera-btn" onclick="openCamera()">
+                        📷 Capture Photo
+                    </button>
+                </div>
+            </div>
+
+            <div class="camera-section" id="cameraSection">
+                <h3 style="margin-bottom: 15px; color: #007bff;">📷 Camera Capture</h3>
+                <video id="cameraVideo" class="camera-video" autoplay playsinline></video>
+                <canvas id="captureCanvas" style="display: none;"></canvas>
+                <div class="camera-controls">
+                    <button class="capture-btn" onclick="capturePhoto()">
+                        📸 Take Photo
+                    </button>
+                    <button class="close-camera-btn" onclick="closeCamera()">
+                        ❌ Close Camera
+                    </button>
+                </div>
             </div>
 
             <div class="loading" id="loading">
@@ -340,9 +468,79 @@
         const resultImage = document.getElementById('resultImage');
         const detections = document.getElementById('detections');
         const apiStatus = document.getElementById('apiStatus');
+        const cameraSection = document.getElementById('cameraSection');
+        const cameraVideo = document.getElementById('cameraVideo');
+        const captureCanvas = document.getElementById('captureCanvas');
+        
+        let cameraStream = null;
 
         // Check API status on page load
         checkApiStatus();
+
+        // Camera functionality
+        async function openCamera() {
+            try {
+                // Request camera access
+                cameraStream = await navigator.mediaDevices.getUserMedia({ 
+                    video: { 
+                        facingMode: 'environment' // Use back camera on mobile devices
+                    } 
+                });
+                
+                cameraVideo.srcObject = cameraStream;
+                cameraSection.style.display = 'block';
+                
+                // Scroll to camera section
+                cameraSection.scrollIntoView({ behavior: 'smooth' });
+                
+            } catch (error) {
+                console.error('Error accessing camera:', error);
+                showError('Unable to access camera. Please make sure you have granted camera permissions.');
+            }
+        }
+
+        function closeCamera() {
+            if (cameraStream) {
+                cameraStream.getTracks().forEach(track => track.stop());
+                cameraStream = null;
+            }
+            cameraSection.style.display = 'none';
+            cameraVideo.srcObject = null;
+        }
+
+        function capturePhoto() {
+            if (!cameraStream) {
+                showError('Camera not available');
+                return;
+            }
+
+            // Set canvas size to match video
+            const canvas = captureCanvas;
+            const video = cameraVideo;
+            
+            canvas.width = video.videoWidth;
+            canvas.height = video.videoHeight;
+            
+            // Draw the current video frame to canvas
+            const ctx = canvas.getContext('2d');
+            ctx.drawImage(video, 0, 0);
+            
+            // Convert canvas to blob and process
+            canvas.toBlob((blob) => {
+                if (blob) {
+                    // Create a file from the blob
+                    const file = new File([blob], 'camera-capture.jpg', { type: 'image/jpeg' });
+                    
+                    // Close camera
+                    closeCamera();
+                    
+                    // Process the captured image
+                    handleFile(file);
+                } else {
+                    showError('Failed to capture photo');
+                }
+            }, 'image/jpeg', 0.8);
+        }
 
         function checkApiStatus() {
             fetch('/api/status')
