@@ -32,14 +32,11 @@ RUN pip install --no-cache-dir -r requirements.txt
 # Copy application files
 COPY . .
 
-# Make startup script executable
-RUN chmod +x start.sh
-
 # Create necessary directories
 RUN mkdir -p uploads results
 
 # Expose port
 EXPOSE 8080
 
-# Start the application with startup script
-CMD ["./start.sh"]
+# Start the application with proper PORT handling
+CMD ["sh", "-c", "exec gunicorn --bind 0.0.0.0:${PORT:-8080} app:app --timeout 900 --workers 1 --access-logfile - --error-logfile -"]
