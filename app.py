@@ -15,16 +15,31 @@ import google.generativeai as genai
 
 # Load environment variables
 def load_env_vars():
-    """Load environment variables from .env file"""
+    """Load environment variables from system environment and .env file"""
+    import os
     env_vars = {}
+    
+    # First, try to load from system environment (Render deployment)
+    system_env_keys = ['GEMINI_API_KEY', 'GOOGLE_API_KEY', 'GOOGLE_SEARCH_ENGINE_ID', 'PLANTNET_API_KEY']
+    for key in system_env_keys:
+        value = os.getenv(key)
+        if value:
+            env_vars[key] = value
+            print(f"✅ Loaded {key} from system environment")
+    
+    # Then try to load from .env file (local development)
     try:
         with open('.env', 'r') as f:
             for line in f:
                 if line.strip() and not line.startswith('#'):
                     key, value = line.strip().split('=', 1)
-                    env_vars[key] = value
+                    if key not in env_vars:  # Don't overwrite system env vars
+                        env_vars[key] = value
+                        print(f"📁 Loaded {key} from .env file")
     except FileNotFoundError:
-        print("No .env file found - using default settings")
+        print("📝 No .env file found - using system environment variables")
+    
+    print(f"🔑 Total environment variables loaded: {len(env_vars)}")
     return env_vars
 
 # Load environment variables
@@ -56,8 +71,8 @@ try:
     import torch.serialization
     from ultralytics.nn.tasks import DetectionModel
     torch.serialization.add_safe_globals([DetectionModel])
-    # Load model with memory optimization
-    model = YOLO(MODEL_PATH, device='cpu')  # Force CPU to avoid GPU memory issues
+    # Load model without device parameter for compatibility
+    model = YOLO(MODEL_PATH)
     print("✅ YOLO model loaded successfully!")
 except Exception as e:
     print(f"Error loading model with safe_globals: {e}")
@@ -69,7 +84,7 @@ except Exception as e:
             kwargs['weights_only'] = False
             return original_load(*args, **kwargs)
         torch.load = patched_load
-        model = YOLO(MODEL_PATH, device='cpu')  # Force CPU
+        model = YOLO(MODEL_PATH)  # Remove device parameter
         torch.load = original_load
         print("✅ YOLO model loaded with fallback method!")
     except Exception as e2:
