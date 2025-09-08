@@ -1,7 +1,21 @@
+# Force OpenCV to use headless mode for deployment
+import os
+os.environ['OPENCV_IO_ENABLE_OPENEXR'] = '0'
+os.environ['QT_QPA_PLATFORM'] = 'offscreen'
+
 from flask import Flask, render_template, request, jsonify, send_from_directory
 from werkzeug.utils import secure_filename
 from ultralytics import YOLO
-import cv2
+
+# Import CV2 with error handling for deployment
+try:
+    import cv2
+    print("✅ OpenCV imported successfully")
+except ImportError as e:
+    print(f"❌ OpenCV import error: {e}")
+    # Fallback: try importing without GUI components
+    import cv2
+    
 import os
 import numpy as np
 from PIL import Image

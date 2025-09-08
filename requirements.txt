@@ -4,7 +4,7 @@
 Flask==2.3.3
 ultralytics==8.0.196
 Pillow==10.0.1
-opencv-python-headless==4.8.1.78
+opencv-python-headless==4.8.0.76
 requests==2.31.0
 
 # API dependencies - pinned versions
