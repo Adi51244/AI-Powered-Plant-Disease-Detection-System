@@ -11,15 +11,7 @@ os.environ['MPLBACKEND'] = 'Agg'
 from flask import Flask, render_template, request, jsonify, send_from_directory
 from werkzeug.utils import secure_filename
 
-# Import CV2 with error handling for deployment
-try:
-    import cv2
-    print("✅ OpenCV imported successfully")
-except ImportError as e:
-    print(f"❌ OpenCV import error: {e}")
-    # Fallback: try importing without GUI components
-    import cv2
-    
+# Import all safe modules first
 import os
 import numpy as np
 from PIL import Image
@@ -31,7 +23,8 @@ import re
 import time
 import google.generativeai as genai
 
-# Delay YOLO import until needed
+# Delay OpenCV and YOLO imports until needed
+cv2 = None
 YOLO = None
 from PIL import Image
 import io
@@ -96,6 +89,15 @@ os.makedirs(app.config['RESULTS_FOLDER'], exist_ok=True)
 # Model will be loaded lazily when needed
 MODEL_PATH = 'model/best.pt'
 model = None
+
+def get_cv2():
+    """Lazy load OpenCV"""
+    global cv2
+    if cv2 is None:
+        import cv2 as cv2_module
+        cv2 = cv2_module
+        print("✅ OpenCV imported successfully (lazy loaded)")
+    return cv2
 
 def get_yolo_model():
     """Lazy load YOLO model"""
@@ -1517,7 +1519,8 @@ def process_image(image_path):
             # Save annotated image
             annotated_image = result.plot()
             result_path = os.path.join(app.config['RESULTS_FOLDER'], 'annotated_' + os.path.basename(image_path))
-            cv2.imwrite(result_path, annotated_image)
+            cv2_module = get_cv2()
+            cv2_module.imwrite(result_path, annotated_image)
             
             return detections, result_path
     
