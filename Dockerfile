@@ -38,5 +38,5 @@ RUN mkdir -p uploads results
 # Expose port
 EXPOSE 8080
 
-# Start the application with proper PORT handling
-CMD ["sh", "-c", "exec gunicorn --bind 0.0.0.0:${PORT:-8080} app:app --timeout 900 --workers 1 --access-logfile - --error-logfile -"]
+# Start the application with Python script
+CMD ["python3", "start.py"]
