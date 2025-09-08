@@ -38,5 +38,5 @@ RUN mkdir -p uploads results
 # Expose port
 EXPOSE 8080
 
-# Start the Flask application directly
-CMD ["python3", "app.py"]
+# Start with shell to enable environment variable expansion
+CMD ["sh", "-c", "gunicorn --bind 0.0.0.0:$PORT --timeout 600 app:app"]
