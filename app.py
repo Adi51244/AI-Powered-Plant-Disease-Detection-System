@@ -1,11 +1,15 @@
-# Force OpenCV to use headless mode for deployment
+# Force OpenCV to use headless mode for deployment - MUST BE FIRST
 import os
+import sys
+
+# Set all environment variables before any imports
 os.environ['OPENCV_IO_ENABLE_OPENEXR'] = '0'
 os.environ['QT_QPA_PLATFORM'] = 'offscreen'
+os.environ['DISPLAY'] = ':99'
+os.environ['MPLBACKEND'] = 'Agg'
 
 from flask import Flask, render_template, request, jsonify, send_from_directory
 from werkzeug.utils import secure_filename
-from ultralytics import YOLO
 
 # Import CV2 with error handling for deployment
 try:
@@ -18,6 +22,17 @@ except ImportError as e:
     
 import os
 import numpy as np
+from PIL import Image
+import io
+import base64
+import json
+import requests
+import re
+import time
+import google.generativeai as genai
+
+# Delay YOLO import until needed
+YOLO = None
 from PIL import Image
 import io
 import base64
@@ -78,11 +93,20 @@ API_TIMEOUT = 5  # seconds
 os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True)
 os.makedirs(app.config['RESULTS_FOLDER'], exist_ok=True)
 
-# Load the YOLO model
+# Model will be loaded lazily when needed
 MODEL_PATH = 'model/best.pt'
-print(f"🔄 Loading YOLO model from {MODEL_PATH}...")
-model = YOLO(MODEL_PATH)
-print("✅ YOLO model loaded successfully!")
+model = None
+
+def get_yolo_model():
+    """Lazy load YOLO model"""
+    global model, YOLO
+    if model is None:
+        if YOLO is None:
+            from ultralytics import YOLO
+        print(f"🔄 Loading YOLO model from {MODEL_PATH}...")
+        model = YOLO(MODEL_PATH)
+        print("✅ YOLO model loaded successfully!")
+    return model
 
 # Disease information database
 DISEASE_INFO = {
@@ -1453,6 +1477,8 @@ def process_image(image_path):
     """Process image with YOLO model and return results"""
     try:
         # Check if model loaded successfully
+        # Get YOLO model (lazy loading)
+        model = get_yolo_model()
         if model is None:
             raise Exception("YOLO model not loaded properly")
             
