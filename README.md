@@ -25,7 +25,7 @@
 <div align="center">
   
 ```
-🖼️ Upload Image → 🤖 AI Analysis → 📊 Disease Detection → 💊 Treatment Plan
+🖼️ Upload Image OR 📷 Capture Photo → 🤖 AI Analysis → 📊 Disease Detection → 💊 Treatment Plan
 ```
 
 </div>
@@ -39,6 +39,7 @@
 - **Multiple Plant Types**: Apple, Tomato, Potato, Corn, Bell Pepper, Grape, and more
 - **High Accuracy**: YOLOv8-powered detection with confidence scores
 - **Real-time Processing**: Instant results in seconds
+- **📷 Live Camera Capture**: Take photos directly for immediate analysis
 
 ### 🤖 **Multi-AI Intelligence**
 - **🧠 Gemini AI**: Comprehensive disease analysis and treatment protocols
@@ -49,6 +50,7 @@
 
 ### 📱 **User-Friendly Interface**
 - **Drag & Drop Upload**: Simple image submission
+- **📷 Real-time Camera Capture**: Take photos directly from device camera
 - **Responsive Design**: Works on desktop, tablet, and mobile
 - **Clean Results**: Well-structured disease information
 - **Source Attribution**: Know where each piece of information comes from
@@ -378,9 +380,9 @@ python test_plantnet_config.py
 
 ### **📱 Web Interface**
 1. Open browser and go to `http://localhost:5000`
-2. **Upload Image**:
-   - Drag and drop plant image, OR
-   - Click "Choose Image" to browse files
+2. **Upload Options**:
+   - **File Upload**: Drag and drop plant image, OR click "Choose Image" to browse files
+   - **📷 Camera Capture**: Click "Capture Photo" to take pictures directly from your device camera
 3. **View Results**:
    - Disease detection with confidence scores
    - Comprehensive treatment information
@@ -397,9 +399,11 @@ python test_plantnet_config.py
 
 ### **🌱 Best Practices**
 - **Good Images**: Clear, well-lit photos of affected plant parts
+- **📷 Camera Tips**: Use back camera on mobile devices for better quality
 - **Close-up Shots**: Focus on diseased areas for better detection
 - **Multiple Angles**: Upload different views if unsure
 - **Good Lighting**: Natural daylight works best
+- **Field Use**: Camera capture feature perfect for on-site plant diagnosis
 - **Stable Connection**: For best API performance
 
 ---
